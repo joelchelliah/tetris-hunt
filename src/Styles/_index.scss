@@ -1,0 +1,10 @@
+@import "base";
+
+body {
+  font-family: $default-font;
+  font-size: 1rem;
+  margin: 0 auto;
+  text-align: center;
+  color: #336;
+  width: $game-width;
+}

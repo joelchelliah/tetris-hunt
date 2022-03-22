@@ -1,0 +1,27 @@
+{
+  "name": "tetris-hunt",
+  "version": "1.0.0",
+  "description": "Tetris... but with a gun",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "deploy": "ntl deploy",
+    "start": "vite serve ./",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joelchelliah/tetris-hunt"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joelchelliah/tetris-hunt/issues"
+  },
+  "homepage": "https://github.com/joelchelliah/tetris-hunt",
+  "devDependencies": {
+    "sass": "^1.49.9",
+    "vite": "^2.8.0",
+    "vite-plugin-elm": "^2.5.1"
+  }
+}

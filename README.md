@@ -1,2 +1,5 @@
-# tetris-hunt
-Tetris... but with a gun
+# 🔫 tetris-hunt
+>*Tetris... but with a gun*
+
+### WIP
+Coming soon...ish
