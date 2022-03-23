@@ -1,0 +1,7 @@
+- Basic tetris stuff
+- Mouse position to block or in-game pos?
+- Mouse cursor
+- Can have several blocks flying / falling at the same time
+- Flashy clear blocks animation
+- Color adjustment
+- Clean up sass stuff

@@ -1,4 +1,4 @@
-@import "base";
+@import "base", "mixins", "tiles";
 
 body {
   font-family: $default-font;
@@ -7,4 +7,27 @@ body {
   text-align: center;
   color: #336;
   width: $game-width;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.debug-stuff {
+  color: #855;
+  margin-bottom: 1rem;
+}
+
+.github {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  padding-top: 1.5rem;
+  border-top: $divider;
+  margin-top: 2rem;
 }
