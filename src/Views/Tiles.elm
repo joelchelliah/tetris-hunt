@@ -17,20 +17,26 @@ type TileClass
 colorToString : Color -> String
 colorToString color =
     case color of
-        Green ->
-            "green"
+        Yellow ->
+            "yellow"
+
+        Teal ->
+            "teal"
+
+        Purple ->
+            "purple"
+
+        Orange ->
+            "orange"
 
         Blue ->
             "blue"
 
-        Yellow ->
-            "yellow"
+        Green ->
+            "green"
 
-        Pink ->
-            "pink"
-
-        Teal ->
-            "teal"
+        Red ->
+            "red"
 
 
 makeTile : Container msg -> TileClass -> Html msg

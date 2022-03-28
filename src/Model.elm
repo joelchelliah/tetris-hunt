@@ -14,6 +14,7 @@ type alias Block =
     { positions : List Position -- The position of each tile
     , rotation : Int -- Between 1 - 4, representing each rotated state
     , state : BlockState
+    , shape : BlockShape
     , color : Color
     }
 
@@ -48,17 +49,20 @@ type Tile
 
 
 type Color
-    = Green
-    | Blue
-    | Yellow
-    | Pink
+    = Yellow
     | Teal
+    | Purple
+    | Orange
+    | Blue
+    | Green
+    | Red
 
 
 type GameState
     = Init
     | Running
     | Paused
+    | GameOver
 
 
 type BlockState
@@ -67,16 +71,27 @@ type BlockState
     | Spinning
 
 
+type BlockShape
+    = Square
+    | Line
+    | Pyramid
+    | Hook
+    | ReverseHook
+    | Snake
+    | ReverseSnake
+
+
 type Msg
-    = FrameDelta Float
+    = MouseMove MouseMoveData
+    | KeyDown String
+    | FrameDelta Float
+    | NewBlock BlockShape
     | Enter
     | Tick
-    | KeyDown String
-    | MouseMove MouseMoveData
 
 
 config =
     { gameWidth = 10
     , gameHeight = 14
-    , gameSpeed = 250 -- Number of milliseconds between each Tick
+    , gameSpeed = 50 -- Number of milliseconds between each Tick
     }

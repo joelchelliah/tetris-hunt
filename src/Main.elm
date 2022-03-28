@@ -2,12 +2,13 @@ module Main exposing (..)
 
 import Browser
 import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseMove)
-import Components.Blocks as Blocks
+import Components.Block as Block
 import Components.TileSpace as TileSpace
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (Decoder)
-import Model exposing (GameState(..), Model, MouseMoveData, Msg(..), config)
+import Message exposing (getNewBlockCommand)
+import Model exposing (BlockShape(..), GameState(..), Model, MouseMoveData, Msg(..), config)
 import Utils.Icon exposing (iconCss)
 import Views.Hud as Hud
 import Views.Tiles as Tiles
@@ -16,7 +17,7 @@ import Views.Tiles as Tiles
 init : () -> ( Model, Cmd Msg )
 init () =
     ( { state = Init
-      , block = Blocks.init
+      , block = Nothing
       , tileSpace = TileSpace.init config.gameWidth config.gameHeight
       , frameDeltas = { tickDelta = 0 }
       , mouseMoveDebug = { offsetX = 0, offsetY = 0, width = 0, height = 0 }
@@ -29,25 +30,27 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ state, block, tileSpace, frameDeltas } as model) =
     case msg of
         Enter ->
-            let
-                newState =
-                    if state == Running then
-                        Paused
+            if state == Running then
+                ( { model | state = Paused }, Cmd.none )
 
-                    else
-                        Running
-            in
-            ( { model | state = newState }, Cmd.none )
+            else if state == GameOver then
+                init ()
+
+            else
+                ( { model | state = Running }, Cmd.none )
 
         MouseMove data ->
             ( { model | mouseMoveDebug = data }, Cmd.none )
 
+        NewBlock shape ->
+            ( { model | block = Just (Block.init shape) }, Cmd.none )
+
         Tick ->
             let
-                ( newBlock, didDescend ) =
-                    Blocks.update tileSpace block
+                ( newBlock, didFall ) =
+                    Block.update tileSpace block
             in
-            if didDescend then
+            if didFall then
                 ( { model
                     | tileSpace = TileSpace.update Nothing tileSpace
                     , block = newBlock
@@ -55,13 +58,15 @@ update msg ({ state, block, tileSpace, frameDeltas } as model) =
                 , Cmd.none
                 )
 
+            else if Block.isOutOfView newBlock then
+                ( { model | state = GameOver }, Cmd.none )
+
             else
                 ( { model
                     | tileSpace = TileSpace.update newBlock tileSpace
                     , block = Nothing
                   }
-                , --TODO: Message for generating next block
-                  Cmd.none
+                , getNewBlockCommand
                 )
 
         FrameDelta delta ->
@@ -87,11 +92,17 @@ view model =
     let
         title =
             case model.state of
+                Init ->
+                    h1 [] [ text "🏁 Press Enter to start" ]
+
+                Paused ->
+                    h1 [] [ text "🕰️ Paused..." ]
+
+                GameOver ->
+                    h1 [] [ text "☠️ Game over!" ]
+
                 Running ->
                     h1 [] [ text "🏃 Running!" ]
-
-                _ ->
-                    h1 [] [ text "🕰️ Paused..." ]
 
         mouseDebug =
             div [ class "debug-stuff" ]

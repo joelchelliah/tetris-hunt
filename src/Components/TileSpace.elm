@@ -39,7 +39,8 @@ init width height =
                 Wall
 
             else
-                Free ( x, y )
+                -- 0-indexing
+                Free ( x - 1, y - 1 )
 
         initRow y =
             List.map (\x -> initTile ( x, y )) (List.range 1 width)

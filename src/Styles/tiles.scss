@@ -32,24 +32,32 @@ $row-height: calc($tile-size + 2 * $tile-border);
   &.block {
     position: relative;
 
-    &.green {
-      @include colored-tile(#5b5);
+    &.yellow {
+      @include colored-tile(#dd5);
+    }
+
+    &.teal {
+      @include colored-tile(#4cc);
+    }
+
+    &.purple {
+      @include colored-tile(#d6d);
+    }
+
+    &.orange {
+      @include colored-tile(#d90);
     }
 
     &.blue {
       @include colored-tile(#77f);
     }
 
-    &.yellow {
-      @include colored-tile(#dd5);
+    &.green {
+      @include colored-tile(#5b5);
     }
 
-    &.pink {
-      @include colored-tile(#d6d);
-    }
-
-    &.teal {
-      @include colored-tile(#4cc);
+    &.red {
+      @include colored-tile(#d55);
     }
   }
 }
