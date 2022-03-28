@@ -3,7 +3,7 @@ module Model exposing (..)
 
 type alias Model =
     { state : GameState
-    , blocks : List Block
+    , block : Maybe Block
     , tileSpace : TileSpace
     , frameDeltas : FrameDeltas
     , mouseMoveDebug : MouseMoveData
@@ -11,13 +11,9 @@ type alias Model =
 
 
 type alias Block =
-    { parts : List BlockPart
+    { positions : List Position -- The position of each tile
+    , rotation : Int -- Between 1 - 4, representing each rotated state
     , state : BlockState
-    }
-
-
-type alias BlockPart =
-    { position : Position
     , color : Color
     }
 
@@ -45,9 +41,10 @@ type alias MouseMoveData =
 
 type Tile
     = Wall
-    | Free Position
-    | Taken Position Color
-    | Removing Position
+    | Free Position -- Open position without any tiles
+    | Locked Position Color -- Block tile, locked into position
+    | UnLocked Position Color -- Block tile, unlocked by tile below being removed
+    | Removing Position Color Float -- Float for decay animation
 
 
 type Color
@@ -65,8 +62,9 @@ type GameState
 
 
 type BlockState
-    = Flying
-    | Falling
+    = Falling
+    | Flying
+    | Spinning
 
 
 type Msg
@@ -75,11 +73,10 @@ type Msg
     | Tick
     | KeyDown String
     | MouseMove MouseMoveData
-    | Noop
 
 
 config =
     { gameWidth = 10
     , gameHeight = 14
-    , gameSpeed = 90 -- Number of milliseconds between each Tick
+    , gameSpeed = 250 -- Number of milliseconds between each Tick
     }

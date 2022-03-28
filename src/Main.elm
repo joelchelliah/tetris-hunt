@@ -2,20 +2,22 @@ module Main exposing (..)
 
 import Browser
 import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseMove)
-import Components.Hud as Hud
-import Components.Tiles as Tiles
-import Html exposing (div, h1, text)
+import Components.Blocks as Blocks
+import Components.TileSpace as TileSpace
+import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (Decoder)
 import Model exposing (GameState(..), Model, MouseMoveData, Msg(..), config)
 import Utils.Icon exposing (iconCss)
+import Views.Hud as Hud
+import Views.Tiles as Tiles
 
 
 init : () -> ( Model, Cmd Msg )
 init () =
     ( { state = Init
-      , blocks = []
-      , tileSpace = Tiles.init config.gameWidth config.gameHeight
+      , block = Blocks.init
+      , tileSpace = TileSpace.init config.gameWidth config.gameHeight
       , frameDeltas = { tickDelta = 0 }
       , mouseMoveDebug = { offsetX = 0, offsetY = 0, width = 0, height = 0 }
       }
@@ -24,12 +26,12 @@ init () =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ state, block, tileSpace, frameDeltas } as model) =
     case msg of
         Enter ->
             let
                 newState =
-                    if model.state == Running then
+                    if state == Running then
                         Paused
 
                     else
@@ -40,10 +42,47 @@ update msg model =
         MouseMove data ->
             ( { model | mouseMoveDebug = data }, Cmd.none )
 
+        Tick ->
+            let
+                ( newBlock, didDescend ) =
+                    Blocks.update tileSpace block
+            in
+            if didDescend then
+                ( { model
+                    | tileSpace = TileSpace.update Nothing tileSpace
+                    , block = newBlock
+                  }
+                , Cmd.none
+                )
+
+            else
+                ( { model
+                    | tileSpace = TileSpace.update newBlock tileSpace
+                    , block = Nothing
+                  }
+                , --TODO: Message for generating next block
+                  Cmd.none
+                )
+
+        FrameDelta delta ->
+            let
+                newTickDelta =
+                    frameDeltas.tickDelta + delta
+
+                updateDeltas tick =
+                    { frameDeltas | tickDelta = tick }
+            in
+            if newTickDelta >= config.gameSpeed then
+                update Tick { model | frameDeltas = updateDeltas 0 }
+
+            else
+                ( { model | frameDeltas = updateDeltas newTickDelta }, Cmd.none )
+
         _ ->
             ( model, Cmd.none )
 
 
+view : Model -> Html Msg
 view model =
     let
         title =
@@ -71,16 +110,6 @@ view model =
         ]
 
 
-keyToMessage : String -> Msg
-keyToMessage key =
-    case key of
-        "Enter" ->
-            Enter
-
-        _ ->
-            Tick
-
-
 keyboardDecoder : Decoder Msg
 keyboardDecoder =
     let
@@ -90,7 +119,7 @@ keyboardDecoder =
                     Enter
 
                 else
-                    Noop
+                    FrameDelta 0
     in
     Decode.field "key" Decode.string |> Decode.map toMsg
 
@@ -119,7 +148,9 @@ subscriptions model =
             Sub.batch
                 [ onAnimationFrameDelta FrameDelta
                 , keyDownSub
-                , mouseMoveSub
+
+                -- TODO: Currently disabled to focus on basic gameplay elements first.
+                -- , mouseMoveSub
                 ]
 
         _ ->

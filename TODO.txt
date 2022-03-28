@@ -1,4 +1,5 @@
 - Basic tetris stuff
+- Lose when tile cannot move down from start pos
 - Mouse position to block or in-game pos?
 - Mouse cursor
 - Can have several blocks flying / falling at the same time
