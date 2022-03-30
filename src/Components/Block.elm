@@ -8,19 +8,15 @@ centerXOffset =
     (config.gameWidth - 2) // 2
 
 
-squarePositions : List Position
-squarePositions =
-    [ ( 0, -2 ), ( 1, -2 ), ( 0, -1 ), ( 1, -1 ) ]
-
-
-linePositions : List Position
-linePositions =
-    [ ( 0, -4 ), ( 0, -3 ), ( 0, -2 ), ( 0, -1 ) ]
-
-
-pyramidPositions : List Position
-pyramidPositions =
-    [ ( 1, -2 ), ( 0, -1 ), ( 1, -1 ), ( 2, -1 ) ]
+blockPositions =
+    { square = [ ( 0, -2 ), ( 1, -2 ), ( 0, -1 ), ( 1, -1 ) ]
+    , line = [ ( 0, -4 ), ( 0, -3 ), ( 0, -2 ), ( 0, -1 ) ]
+    , pyramid = [ ( -1, -2 ), ( -1, -1 ), ( 0, -1 ), ( 1, -1 ) ]
+    , leftFoot = [ ( 0, -3 ), ( 0, -2 ), ( -1, -1 ), ( 0, -1 ) ]
+    , rightFoot = [ ( 0, -3 ), ( 0, -2 ), ( 0, -1 ), ( 1, -1 ) ]
+    , leftSnake = [ ( -1, -2 ), ( 0, -2 ), ( 0, -1 ), ( 1, -1 ) ]
+    , rightSnake = [ ( 0, -2 ), ( 1, -2 ), ( -1, -1 ), ( 0, -1 ) ]
+    }
 
 
 getColor : BlockShape -> Color
@@ -35,17 +31,17 @@ getColor shape =
         Pyramid ->
             Purple
 
-        Hook ->
-            Orange
-
-        ReverseHook ->
+        LeftFoot ->
             Blue
 
-        Snake ->
-            Green
+        RightFoot ->
+            Orange
 
-        ReverseSnake ->
+        LeftSnake ->
             Red
+
+        RightSnake ->
+            Green
 
 
 getInitialPositions shape =
@@ -56,16 +52,25 @@ getInitialPositions shape =
         positions =
             case shape of
                 Square ->
-                    squarePositions
+                    blockPositions.square
 
                 Line ->
-                    linePositions
+                    blockPositions.line
 
                 Pyramid ->
-                    pyramidPositions
+                    blockPositions.pyramid
 
-                _ ->
-                    squarePositions
+                LeftFoot ->
+                    blockPositions.leftFoot
+
+                RightFoot ->
+                    blockPositions.rightFoot
+
+                LeftSnake ->
+                    blockPositions.leftSnake
+
+                RightSnake ->
+                    blockPositions.rightSnake
     in
     center positions
 

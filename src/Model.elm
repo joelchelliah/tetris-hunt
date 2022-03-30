@@ -75,10 +75,10 @@ type BlockShape
     = Square
     | Line
     | Pyramid
-    | Hook
-    | ReverseHook
-    | Snake
-    | ReverseSnake
+    | LeftFoot
+    | RightFoot
+    | LeftSnake
+    | RightSnake
 
 
 type Msg
