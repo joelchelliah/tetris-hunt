@@ -1,13 +1,13 @@
 module Main exposing (..)
 
 import Browser
-import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseMove)
+import Browser.Events exposing (onAnimationFrameDelta, onKeyDown, onMouseDown, onMouseMove)
 import Components.Block as Block
 import Components.TileSpace as TileSpace
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (Decoder)
-import Message exposing (getNewBlockCommand)
+import Message exposing (getNewBlockCommand, keyboardDecoder, mouseClickDecoder, mouseMoveDecoder)
 import Model exposing (BlockShape(..), GameState(..), Model, MouseMoveData, Msg(..), config)
 import Utils.Icon exposing (iconCss)
 import Views.Hud as Hud
@@ -42,13 +42,16 @@ update msg ({ state, block, tileSpace, frameDeltas } as model) =
         MouseMove data ->
             ( { model | mouseMoveDebug = data }, Cmd.none )
 
+        MouseClick ->
+            ( { model | block = Block.rotate tileSpace block }, Cmd.none )
+
         NewBlock shape ->
             ( { model | block = Just (Block.init shape) }, Cmd.none )
 
         Tick ->
             let
                 ( newBlock, didFall ) =
-                    Block.update tileSpace block
+                    Block.fall tileSpace block
             in
             if didFall then
                 ( { model
@@ -121,30 +124,6 @@ view model =
         ]
 
 
-keyboardDecoder : Decoder Msg
-keyboardDecoder =
-    let
-        toMsg =
-            \val ->
-                if val == "Enter" then
-                    Enter
-
-                else
-                    FrameDelta 0
-    in
-    Decode.field "key" Decode.string |> Decode.map toMsg
-
-
-mouseMoveDecoder : Decoder Msg
-mouseMoveDecoder =
-    Decode.map4 MouseMoveData
-        (Decode.field "clientX" Decode.int)
-        (Decode.field "clientY" Decode.int)
-        (Decode.at [ "target", "offsetWidth" ] Decode.float)
-        (Decode.at [ "target", "offsetHeight" ] Decode.float)
-        |> Decode.map MouseMove
-
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
@@ -153,11 +132,15 @@ subscriptions model =
 
         mouseMoveSub =
             onMouseMove mouseMoveDecoder
+
+        mouseClickSub =
+            onMouseDown mouseClickDecoder
     in
     case model.state of
         Running ->
             Sub.batch
                 [ onAnimationFrameDelta FrameDelta
+                , mouseClickSub
                 , keyDownSub
 
                 -- TODO: Currently disabled to focus on basic gameplay elements first.

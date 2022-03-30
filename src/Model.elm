@@ -12,7 +12,7 @@ type alias Model =
 
 type alias Block =
     { positions : List Position -- The position of each tile
-    , rotation : Int -- Between 1 - 4, representing each rotated state
+    , rotation : Int -- Between 0 - 3, representing each rotated state
     , state : BlockState
     , shape : BlockShape
     , color : Color
@@ -83,6 +83,7 @@ type BlockShape
 
 type Msg
     = MouseMove MouseMoveData
+    | MouseClick
     | KeyDown String
     | FrameDelta Float
     | NewBlock BlockShape
@@ -91,7 +92,7 @@ type Msg
 
 
 config =
-    { gameWidth = 10
-    , gameHeight = 14
-    , gameSpeed = 50 -- Number of milliseconds between each Tick
+    { gameWidth = 11
+    , gameHeight = 15
+    , gameSpeed = 350 -- Number of milliseconds between each Tick
     }

@@ -48,3 +48,8 @@ mouseMoveDecoder =
         (Decode.at [ "target", "offsetWidth" ] Decode.float)
         (Decode.at [ "target", "offsetHeight" ] Decode.float)
         |> Decode.map MouseMove
+
+
+mouseClickDecoder : Decoder Msg
+mouseClickDecoder =
+    Decode.succeed MouseClick

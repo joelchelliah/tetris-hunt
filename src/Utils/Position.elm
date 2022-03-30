@@ -18,3 +18,21 @@ getFreeTilePositions =
                 )
     in
     List.foldl (\row acc -> getFreePositionsFromRow row |> List.append acc) []
+
+
+diffPositions : List Position -> List Position -> List Position
+diffPositions =
+    let
+        sub ( x1, y1 ) ( x2, y2 ) =
+            ( x1 - x2, y1 - y2 )
+    in
+    List.map2 sub
+
+
+offsetPositions : List Position -> List Position -> List Position
+offsetPositions =
+    let
+        add ( oX, oY ) ( pX, pY ) =
+            ( oX + pX, oY + pY )
+    in
+    List.map2 add
