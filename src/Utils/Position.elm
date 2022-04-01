@@ -20,6 +20,21 @@ getFreeTilePositions =
     List.foldl (\row acc -> getFreePositionsFromRow row |> List.append acc) []
 
 
+areValidPositions : TileSpace -> List Position -> Bool
+areValidPositions tileSpace =
+    let
+        isPositionOutOfView ( _, y ) =
+            y < 0
+
+        isOnFreeTile pos =
+            isPositionOutOfView pos
+                || (getFreeTilePositions tileSpace
+                        |> List.member pos
+                   )
+    in
+    List.all isOnFreeTile
+
+
 diffPositions : List Position -> List Position -> List Position
 diffPositions =
     let

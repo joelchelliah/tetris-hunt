@@ -1,5 +1,4 @@
 @use "sass:color";
-@use "sass:map";
 
 // - - - - - - - - - - - - - - - - -
 // - - - - - - - Tiles - - - - - - -
@@ -15,52 +14,6 @@
 
   background-color: $color;
   border-color: $highlight $shading $shading $highlight;
-}
-
-@mixin rotate($degrees) {
-  -webkit-transform: rotate($degrees);
-  -moz-transform: rotate($degrees);
-  -ms-transform: rotate($degrees);
-  -o-transform: rotate($degrees);
-  transform: rotate($degrees);
-}
-
-@mixin bulging-tile($config) {
-  $color: map.get($config, "color");
-  $bulges: map.get($config, "bulges");
-
-  @include colored-tile($color);
-
-  @each $bulge-class, $bulge in $bulges {
-    &.bulge-#{$bulge-class} {
-      // Boost bulging tile size
-      $bulge-size: map.get($bulge, "size");
-
-      position: relative;
-      width: calc($tile-size + $bulge-size);
-      height: calc($tile-size + $bulge-size);
-      right: calc($bulge-size / 2);
-      bottom: calc($bulge-size / 2);
-
-      // Brighten bulging tile color
-      $bulge-brightness: map.get($bulge, "brightness");
-      $bulge-color: color.scale($color, $lightness: $bulge-brightness);
-
-      @include colored-tile($bulge-color);
-
-      // Rotate bulging tile, if degrees are provided in config
-      $bulge-degrees: map.get($bulge, "degrees");
-      @if $bulge-degrees {
-        &.clockwise {
-          @include rotate($bulge-degrees);
-        }
-
-        &.counter-clockwise {
-          @include rotate(-($bulge-degrees));
-        }
-      }
-    }
-  }
 }
 
 // - - - - - - - - - - - - - - - - -

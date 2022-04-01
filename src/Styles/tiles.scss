@@ -4,24 +4,38 @@ $tile-and-border-size: calc($tile-size + 2 * $tile-border);
 $num-tiles-per-row: 11;
 $row-width: calc($tile-and-border-size * $num-tiles-per-row);
 
+$preview-size-multiplier: 1.25;
+
 %tile-base {
   border: $tile-border solid;
   width: $tile-size;
   height: $tile-size;
+}
+%preview-tile-base {
+  border: calc($preview-size-multiplier * $tile-border) solid transparent;
+  background-color: transparent;
+  width: calc($preview-size-multiplier * $tile-size);
+  height: calc($preview-size-multiplier * $tile-size);
 }
 
 .row {
   display: flex;
   flex-direction: row;
   height: $tile-and-border-size;
+
+  &.preview {
+    height: calc($preview-size-multiplier * $tile-and-border-size);
+  }
 }
 
-.preview {
+.preview-space {
   position: absolute;
+  top: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: $row-width;
+  z-index: 42;
 }
 
 /* Free (non-wall) tile, and also the background tile behind all other tiles. */
@@ -34,7 +48,7 @@ $row-width: calc($tile-and-border-size * $num-tiles-per-row);
 .preview-tile {
   display: inline-block;
 
-  @include colored-tile(#faa, -20%);
+  @extend %preview-tile-base;
 }
 
 .tile {
@@ -42,7 +56,7 @@ $row-width: calc($tile-and-border-size * $num-tiles-per-row);
   margin: -$tile-border;
 
   &.wall {
-    @include colored-tile(#aaa, -60%, 0%);
+    @include colored-tile(#999, -60%, 0%);
   }
 
   &.block {
@@ -74,6 +88,10 @@ $row-width: calc($tile-and-border-size * $num-tiles-per-row);
 
     &.red {
       @include colored-tile(#d55);
+    }
+
+    &.preview {
+      @extend %preview-tile-base;
     }
   }
 }

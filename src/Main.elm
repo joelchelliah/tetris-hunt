@@ -45,7 +45,12 @@ update msg ({ state, block, tileSpace, frameDeltas } as model) =
 
         MouseClick ->
             if Block.isSpinning block then
-                ( { model | block = Block.stopSpin block }, Cmd.none )
+                case Block.stopSpin tileSpace block of
+                    Nothing ->
+                        ( { model | state = GameOver }, Cmd.none )
+
+                    newBlock ->
+                        ( { model | block = newBlock }, Cmd.none )
 
             else
                 ( model, Cmd.none )

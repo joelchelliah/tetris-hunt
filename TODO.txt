@@ -6,3 +6,4 @@
 - Flashy clear blocks animation
 - Color adjustment
 - Clean up sass stuff
+- Some kind of flash for each rotate? so that the square doesnt seem too idle

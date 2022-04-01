@@ -12,7 +12,6 @@ type alias Container msg =
 
 type TileClass
     = FreeTile
-    | PreviewTile
     | Tile String
 
 
@@ -41,41 +40,47 @@ colorToString color =
             "red"
 
 
-makeTile : Container msg -> TileClass -> Html msg
-makeTile tileContainer tileClass =
+makeTile : Container msg -> Bool -> TileClass -> Html msg
+makeTile tileContainer isPreview tileClass =
     let
-        wrapInClass className tile =
-            div [ class className ] [ tile ]
+        wrapInBackgroundTile tile =
+            if isPreview then
+                div [ class "preview-tile" ] [ tile ]
+
+            else
+                div [ class "background-tile" ] [ tile ]
     in
     case tileClass of
         FreeTile ->
-            tileContainer [] [] |> wrapInClass "background-tile"
-
-        PreviewTile ->
-            tileContainer [] [] |> wrapInClass "preview-tile"
+            tileContainer [] [] |> wrapInBackgroundTile
 
         Tile name ->
-            tileContainer [ class ("tile " ++ name) ] [] |> wrapInClass "background-tile"
+            tileContainer [ class ("tile " ++ name) ] [] |> wrapInBackgroundTile
 
 
 placeWallTile : Html msg
 placeWallTile =
-    Tile "wall" |> makeTile div
+    Tile "wall" |> makeTile div False
 
 
 placeFreeTile : Html msg
 placeFreeTile =
-    makeTile span FreeTile
+    makeTile span False FreeTile
 
 
 placePreviewTile : Html msg
 placePreviewTile =
-    makeTile span PreviewTile
+    makeTile span True FreeTile
 
 
 placeBlockTile : Color -> Html msg
 placeBlockTile color =
-    Tile ("block " ++ colorToString color) |> makeTile div
+    Tile ("block " ++ colorToString color) |> makeTile div False
+
+
+placePreviewBlockTile : Color -> Html msg
+placePreviewBlockTile color =
+    Tile ("block " ++ colorToString color ++ " preview") |> makeTile div True
 
 
 viewTile : Maybe Block -> Tile -> Html Msg
@@ -117,7 +122,7 @@ previewTile block tile =
 
                 Just { positions, color } ->
                     if List.member pos positions then
-                        placeBlockTile color
+                        placePreviewBlockTile color
 
                     else
                         placePreviewTile
@@ -130,11 +135,9 @@ preview : Model -> Html Msg
 preview { previewSpace, block } =
     let
         previewRow row =
-            div [ class "row" ] (List.map (previewTile block) row)
+            div [ class "row preview" ] (List.map (previewTile block) row)
     in
-    div [ class "preview-container" ]
-        [ div [ class "preview" ] (List.map previewRow previewSpace)
-        ]
+    div [ class "preview-space" ] (List.map previewRow previewSpace)
 
 
 view : Model -> Html Msg
