@@ -1,6 +1,8 @@
 $tile-border: 0.5rem;
 $tile-size: 2rem;
-$row-height: calc($tile-size + 2 * $tile-border);
+$tile-and-border-size: calc($tile-size + 2 * $tile-border);
+$num-tiles-per-row: 11;
+$row-width: calc($tile-and-border-size * $num-tiles-per-row);
 
 %tile-base {
   border: $tile-border solid;
@@ -11,7 +13,15 @@ $row-height: calc($tile-size + 2 * $tile-border);
 .row {
   display: flex;
   flex-direction: row;
-  height: $row-height;
+  height: $tile-and-border-size;
+}
+
+.preview {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: $row-width;
 }
 
 /* Free (non-wall) tile, and also the background tile behind all other tiles. */
@@ -19,6 +29,12 @@ $row-height: calc($tile-size + 2 * $tile-border);
   display: inline-block;
 
   @include colored-tile(#ddf, -20%);
+}
+
+.preview-tile {
+  display: inline-block;
+
+  @include colored-tile(#faa, -20%);
 }
 
 .tile {

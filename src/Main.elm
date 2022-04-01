@@ -6,10 +6,10 @@ import Components.Block as Block
 import Components.TileSpace as TileSpace
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
-import Json.Decode as Decode exposing (Decoder)
-import Message exposing (getNewBlockCommand, keyboardDecoder, mouseClickDecoder, mouseMoveDecoder)
-import Model exposing (BlockShape(..), GameState(..), Model, MouseMoveData, Msg(..), config)
+import Model exposing (BlockShape(..), BlockState(..), GameState(..), Model, Msg(..), config)
+import Utils.Command exposing (getNewBlockCommand)
 import Utils.Icon exposing (iconCss)
+import Utils.Input exposing (keyboardDecoder, mouseClickDecoder, mouseMoveDecoder)
 import Views.Hud as Hud
 import Views.Tiles as Tiles
 
@@ -19,7 +19,8 @@ init () =
     ( { state = Init
       , block = Nothing
       , tileSpace = TileSpace.init config.gameWidth config.gameHeight
-      , frameDeltas = { tickDelta = 0 }
+      , previewSpace = TileSpace.init 7 5
+      , frameDeltas = { moveTickDelta = 0, spinTickDelta = 0 }
       , mouseMoveDebug = { offsetX = 0, offsetY = 0, width = 0, height = 0 }
       }
     , Cmd.none
@@ -43,51 +44,70 @@ update msg ({ state, block, tileSpace, frameDeltas } as model) =
             ( { model | mouseMoveDebug = data }, Cmd.none )
 
         MouseClick ->
-            ( { model | block = Block.rotate tileSpace block }, Cmd.none )
+            if Block.isSpinning block then
+                ( { model | block = Block.stopSpin block }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
 
         NewBlock shape ->
             ( { model | block = Just (Block.init shape) }, Cmd.none )
 
-        Tick ->
-            let
-                ( newBlock, didFall ) =
-                    Block.fall tileSpace block
-            in
-            if didFall then
-                ( { model
-                    | tileSpace = TileSpace.update Nothing tileSpace
-                    , block = newBlock
-                  }
-                , Cmd.none
-                )
+        SpinTick ->
+            case block of
+                Nothing ->
+                    ( model, getNewBlockCommand )
 
-            else if Block.isOutOfView newBlock then
-                ( { model | state = GameOver }, Cmd.none )
+                Just _ ->
+                    ( { model | block = Block.updateSpin block }, Cmd.none )
+
+        MoveTick ->
+            if Block.isMoving block then
+                let
+                    newBlock =
+                        Block.updateMovement tileSpace block
+                in
+                if block /= newBlock then
+                    ( { model
+                        | tileSpace = TileSpace.update Nothing tileSpace
+                        , block = newBlock
+                      }
+                    , Cmd.none
+                    )
+
+                else if Block.isOutOfView newBlock then
+                    ( { model | state = GameOver }, Cmd.none )
+
+                else
+                    ( { model
+                        | tileSpace = TileSpace.update newBlock tileSpace
+                        , block = Nothing
+                      }
+                    , getNewBlockCommand
+                    )
 
             else
-                ( { model
-                    | tileSpace = TileSpace.update newBlock tileSpace
-                    , block = Nothing
-                  }
-                , getNewBlockCommand
-                )
+                ( model, Cmd.none )
 
         FrameDelta delta ->
             let
-                newTickDelta =
-                    frameDeltas.tickDelta + delta
+                newMoveTickDelta =
+                    frameDeltas.moveTickDelta + delta
 
-                updateDeltas tick =
-                    { frameDeltas | tickDelta = tick }
+                newSpinTickDelta =
+                    frameDeltas.spinTickDelta + delta
+
+                updateDeltas move spin =
+                    { frameDeltas | moveTickDelta = move, spinTickDelta = spin }
             in
-            if newTickDelta >= config.gameSpeed then
-                update Tick { model | frameDeltas = updateDeltas 0 }
+            if newMoveTickDelta >= config.moveTickDelay then
+                update MoveTick { model | frameDeltas = updateDeltas 0 newSpinTickDelta }
+
+            else if newSpinTickDelta >= config.spinTickDelay then
+                update SpinTick { model | frameDeltas = updateDeltas newMoveTickDelta 0 }
 
             else
-                ( { model | frameDeltas = updateDeltas newTickDelta }, Cmd.none )
-
-        _ ->
-            ( model, Cmd.none )
+                ( { model | frameDeltas = updateDeltas newMoveTickDelta newSpinTickDelta }, Cmd.none )
 
 
 view : Model -> Html Msg

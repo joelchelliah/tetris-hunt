@@ -5,6 +5,7 @@ type alias Model =
     { state : GameState
     , block : Maybe Block
     , tileSpace : TileSpace
+    , previewSpace : TileSpace
     , frameDeltas : FrameDeltas
     , mouseMoveDebug : MouseMoveData
     }
@@ -25,7 +26,7 @@ type alias TileSpace =
 
 type alias FrameDeltas =
     -- To calculate correct time intervals according to the browser's render loop
-    { tickDelta : Float }
+    { moveTickDelta : Float, spinTickDelta : Float }
 
 
 type alias Position =
@@ -66,9 +67,14 @@ type GameState
 
 
 type BlockState
-    = Falling
-    | Flying
+    = Moving Direction
     | Spinning
+
+
+type Direction
+    = Left
+    | Right
+    | Down
 
 
 type BlockShape
@@ -84,15 +90,16 @@ type BlockShape
 type Msg
     = MouseMove MouseMoveData
     | MouseClick
-    | KeyDown String
-    | FrameDelta Float
-    | NewBlock BlockShape
     | Enter
-    | Tick
+    | NewBlock BlockShape
+    | FrameDelta Float
+    | SpinTick
+    | MoveTick
 
 
 config =
     { gameWidth = 11
     , gameHeight = 15
-    , gameSpeed = 350 -- Number of milliseconds between each Tick
+    , moveTickDelay = 350
+    , spinTickDelay = 300
     }

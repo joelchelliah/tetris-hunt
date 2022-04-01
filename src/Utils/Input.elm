@@ -1,29 +1,7 @@
-module Message exposing (..)
+module Utils.Input exposing (..)
 
-import Array
 import Json.Decode as Decode exposing (Decoder)
-import Model exposing (BlockShape(..), Color(..), MouseMoveData, Msg(..), Position)
-import Random
-
-
-getNewBlockCommand : Cmd Msg
-getNewBlockCommand =
-    let
-        shapes =
-            Array.fromList [ Square, Line, Pyramid, LeftFoot, RightFoot, LeftSnake, RightSnake ]
-
-        toShape i =
-            case Array.get i shapes of
-                Just shape ->
-                    shape
-
-                Nothing ->
-                    Square
-    in
-    (Array.length shapes - 1)
-        |> Random.int 0
-        |> Random.map toShape
-        |> Random.generate NewBlock
+import Model exposing (BlockShape(..), Color(..), MouseMoveData, Msg(..))
 
 
 keyboardDecoder : Decoder Msg

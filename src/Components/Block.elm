@@ -1,6 +1,6 @@
 module Components.Block exposing (..)
 
-import Model exposing (Block, BlockShape(..), BlockState(..), Color(..), Position, TileSpace, config)
+import Model exposing (Block, BlockShape(..), BlockState(..), Color(..), Direction(..), Position, TileSpace, config)
 import Utils.Position exposing (diffPositions, getFreeTilePositions, offsetPositions)
 
 
@@ -21,13 +21,13 @@ getInitialPositions shape rotation =
             [ ( 0, -2 ), ( -1, -1 ), ( 0, -1 ), ( 1, -1 ) ]
 
         ( Pyramid, 1 ) ->
-            [ ( 0, -2 ), ( 0, -1 ), ( 1, -1 ), ( 0, 0 ) ]
+            [ ( 0, -3 ), ( 0, -2 ), ( 1, -2 ), ( 0, -1 ) ]
 
         ( Pyramid, 2 ) ->
-            [ ( -1, -1 ), ( 0, -1 ), ( 1, -1 ), ( 0, 0 ) ]
+            [ ( -1, -2 ), ( 0, -2 ), ( 1, -2 ), ( 0, -1 ) ]
 
         ( Pyramid, _ ) ->
-            [ ( 0, -2 ), ( -1, -1 ), ( 0, -1 ), ( 0, 0 ) ]
+            [ ( 0, -3 ), ( -1, -2 ), ( 0, -2 ), ( 0, -1 ) ]
 
         ( LeftFoot, 0 ) ->
             [ ( 0, -3 ), ( 0, -2 ), ( -1, -1 ), ( 0, -1 ) ]
@@ -58,14 +58,14 @@ getInitialPositions shape rotation =
                 [ ( -1, -2 ), ( 0, -2 ), ( 0, -1 ), ( 1, -1 ) ]
 
             else
-                [ ( 0, -2 ), ( -1, -1 ), ( 0, -1 ), ( -1, 0 ) ]
+                [ ( 0, -3 ), ( -1, -2 ), ( 0, -2 ), ( -1, -1 ) ]
 
         ( RightSnake, _ ) ->
             if modBy 2 rotation == 0 then
                 [ ( 0, -2 ), ( 1, -2 ), ( -1, -1 ), ( 0, -1 ) ]
 
             else
-                [ ( 0, -2 ), ( 0, -1 ), ( 1, -1 ), ( 1, 0 ) ]
+                [ ( 0, -3 ), ( 0, -2 ), ( 1, -2 ), ( 1, -1 ) ]
 
 
 getColor : BlockShape -> Color
@@ -120,18 +120,11 @@ isValid tileSpace block =
 
 getNextRotation : Block -> Int
 getNextRotation { rotation } =
-    let
-        d1 =
-            Debug.log "rotation" rotation
-
-        d2 =
-            Debug.log "NEW rotation" (modBy 4 (rotation + 1))
-    in
     modBy 4 (rotation + 1)
 
 
-updateAfterFall : Block -> Block
-updateAfterFall block =
+getNewBlockAfterFall : Block -> Block
+getNewBlockAfterFall block =
     let
         newPositions =
             List.map (\( x, y ) -> ( x, y + 1 )) block.positions
@@ -139,8 +132,8 @@ updateAfterFall block =
     { block | positions = newPositions }
 
 
-updateAfterRotate : Block -> Block
-updateAfterRotate ({ positions, rotation, shape } as block) =
+getNewBlockAfterSpin : Block -> Block
+getNewBlockAfterSpin ({ positions, rotation, shape } as block) =
     let
         newRotation =
             getNextRotation block
@@ -160,57 +153,88 @@ updateAfterRotate ({ positions, rotation, shape } as block) =
     { block | rotation = newRotation, positions = newPositions }
 
 
+hasState : BlockState -> Maybe Block -> Bool
+hasState blockState block =
+    case block of
+        Nothing ->
+            False
+
+        Just { state } ->
+            state == blockState
+
+
+isMoving : Maybe Block -> Bool
+isMoving block =
+    hasState (Moving Left) block
+        || hasState (Moving Right) block
+        || hasState (Moving Down) block
+
+
+isSpinning : Maybe Block -> Bool
+isSpinning block =
+    hasState Spinning block
+
+
 init : BlockShape -> Block
 init shape =
     let
-        centerXOffset =
-            -- toFloat + ceiling to get correct center when width is odd
-            toFloat (config.gameWidth - 2) / 2 |> ceiling
+        toPreviewPosition ( x, y ) =
+            ( x + 3, y + 4 )
 
         positions =
-            getInitialPositions shape 0
-                |> List.map (\( x, y ) -> ( x + centerXOffset, y ))
+            getInitialPositions shape 0 |> List.map toPreviewPosition
     in
     { positions = positions
     , color = getColor shape
     , shape = shape
     , rotation = 0
-    , state = Falling
+    , state = Spinning
     }
 
 
-fall : TileSpace -> Maybe Block -> ( Maybe Block, Bool )
-fall tileSpace maybeBlock =
-    -- Returns a pair of the (potentially updated) block, and a Bool saying whether it fell or not.
-    case maybeBlock of
-        Nothing ->
-            ( Nothing, False )
-
-        Just block ->
+updateMovement : TileSpace -> Maybe Block -> Maybe Block
+updateMovement tileSpace =
+    Maybe.map
+        (\block ->
             let
                 newBlock =
-                    updateAfterFall block
+                    getNewBlockAfterFall block
             in
             if isValid tileSpace newBlock then
-                ( Just newBlock, True )
+                newBlock
 
             else
-                ( maybeBlock, False )
+                block
+        )
 
 
-rotate : TileSpace -> Maybe Block -> Maybe Block
-rotate tileSpace maybeBlock =
-    case maybeBlock of
-        Nothing ->
-            Nothing
+updateSpin : Maybe Block -> Maybe Block
+updateSpin =
+    Maybe.map
+        (\block ->
+            if block.state == Spinning then
+                getNewBlockAfterSpin block
 
-        Just block ->
+            else
+                block
+        )
+
+
+stopSpin : Maybe Block -> Maybe Block
+stopSpin maybeBlock =
+    Maybe.map
+        (\({ shape, rotation } as block) ->
             let
-                newBlock =
-                    updateAfterRotate block
-            in
-            if isValid tileSpace newBlock then
-                Just newBlock
+                xOffset =
+                    -- toFloat + ceiling to get correct center when width is odd
+                    toFloat (config.gameWidth - 2) / 2 |> ceiling
 
-            else
-                maybeBlock
+                toTileSpacePosition ( x, y ) =
+                    ( x + xOffset, y )
+
+                positions =
+                    getInitialPositions shape rotation |> List.map toTileSpacePosition
+            in
+            { block | state = Moving Left, positions = positions }
+        )
+        maybeBlock
