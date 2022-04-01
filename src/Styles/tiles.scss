@@ -39,7 +39,7 @@ $preview-tile-and-border-size: calc(
 }
 
 .preview-backdrop {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.2);
   position: absolute;
   margin-left: $tile-and-border-size;
   height: calc($column-height - $tile-and-border-size);

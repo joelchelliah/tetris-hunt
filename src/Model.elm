@@ -26,7 +26,10 @@ type alias TileSpace =
 
 type alias FrameDeltas =
     -- To calculate correct time intervals according to the browser's render loop
-    { moveTickDelta : Float, spinTickDelta : Float }
+    { spinTickDelta : Float
+    , moveTickDelta : Float
+    , dropTickDelta : Float
+    }
 
 
 type alias Position =
@@ -69,12 +72,12 @@ type GameState
 type BlockState
     = Moving Direction
     | Spinning
+    | Dropping
 
 
 type Direction
     = Left
     | Right
-    | Down
 
 
 type BlockShape
@@ -95,11 +98,13 @@ type Msg
     | FrameDelta Float
     | SpinTick
     | MoveTick
+    | DropTick
 
 
 config =
     { gameWidth = 11 -- Must correspond to $num-tiles-per-row in tiles.scss
     , gameHeight = 15 -- Must correspond to $num-rows in tiles.scss
-    , moveTickDelay = 350
-    , spinTickDelay = 300
+    , spinTickDelay = 350
+    , moveTickDelay = 100
+    , dropTickDelay = 10
     }

@@ -93,28 +93,9 @@ getColor shape =
             Green
 
 
-isOutOfView : Maybe Block -> Bool
-isOutOfView block =
-    case block of
-        Just { positions } ->
-            List.any (\( _, y ) -> y < 0) positions
-
-        Nothing ->
-            False
-
-
 getNextRotation : Block -> Int
 getNextRotation { rotation } =
     modBy 4 (rotation + 1)
-
-
-getNewBlockAfterFall : Block -> Block
-getNewBlockAfterFall block =
-    let
-        newPositions =
-            List.map (\( x, y ) -> ( x, y + 1 )) block.positions
-    in
-    { block | positions = newPositions }
 
 
 getNewBlockAfterSpin : Block -> Block
@@ -138,6 +119,55 @@ getNewBlockAfterSpin ({ positions, rotation, shape } as block) =
     { block | rotation = newRotation, positions = newPositions }
 
 
+getNewBlockAfterMove : Bool -> Block -> Block
+getNewBlockAfterMove goDown ({ positions, state } as block) =
+    let
+        flipDirection prevDirection =
+            if prevDirection == Right then
+                Left
+
+            else
+                Right
+
+        newPositions =
+            if goDown then
+                List.map (\( x, y ) -> ( x, y + 1 )) positions
+
+            else
+                case state of
+                    Moving Left ->
+                        List.map (\( x, y ) -> ( x - 1, y )) positions
+
+                    Moving Right ->
+                        List.map (\( x, y ) -> ( x + 1, y )) positions
+
+                    _ ->
+                        positions
+
+        newState =
+            case state of
+                Moving direction ->
+                    if goDown then
+                        Moving (flipDirection direction)
+
+                    else
+                        state
+
+                _ ->
+                    state
+    in
+    { block | positions = newPositions, state = newState }
+
+
+getNewBlockAfterDrop : Block -> Block
+getNewBlockAfterDrop ({ positions } as block) =
+    let
+        newPositions =
+            List.map (\( x, y ) -> ( x, y + 1 )) positions
+    in
+    { block | positions = newPositions }
+
+
 hasState : BlockState -> Maybe Block -> Bool
 hasState blockState block =
     case block of
@@ -148,16 +178,29 @@ hasState blockState block =
             state == blockState
 
 
+isSpinning : Maybe Block -> Bool
+isSpinning =
+    hasState Spinning
+
+
 isMoving : Maybe Block -> Bool
 isMoving block =
-    hasState (Moving Left) block
-        || hasState (Moving Right) block
-        || hasState (Moving Down) block
+    hasState (Moving Left) block || hasState (Moving Right) block
 
 
-isSpinning : Maybe Block -> Bool
-isSpinning block =
-    hasState Spinning block
+isDropping : Maybe Block -> Bool
+isDropping =
+    hasState Dropping
+
+
+isValid : TileSpace -> Maybe Block -> Bool
+isValid tileSpace block =
+    case block of
+        Nothing ->
+            False
+
+        Just { positions } ->
+            areValidPositions tileSpace positions
 
 
 init : BlockShape -> Block
@@ -177,36 +220,13 @@ init shape =
     }
 
 
-updateMovement : TileSpace -> Maybe Block -> Maybe Block
-updateMovement tileSpace =
-    Maybe.map
-        (\block ->
-            let
-                newBlock =
-                    getNewBlockAfterFall block
-            in
-            if areValidPositions tileSpace newBlock.positions then
-                newBlock
-
-            else
-                block
-        )
-
-
 updateSpin : Maybe Block -> Maybe Block
 updateSpin =
-    Maybe.map
-        (\block ->
-            if block.state == Spinning then
-                getNewBlockAfterSpin block
-
-            else
-                block
-        )
+    Maybe.map getNewBlockAfterSpin
 
 
-stopSpin : TileSpace -> Maybe Block -> Maybe Block
-stopSpin tileSpace =
+startMove : TileSpace -> Maybe Block -> Maybe Block
+startMove tileSpace =
     Maybe.andThen
         (\({ shape, rotation } as block) ->
             let
@@ -215,7 +235,7 @@ stopSpin tileSpace =
                     toFloat (config.gameWidth - 2) / 2 |> ceiling
 
                 toTileSpacePosition ( x, y ) =
-                    ( x + xOffset, y + 2 )
+                    ( x + xOffset, y + 3 )
 
                 positions =
                     getInitialPositions shape rotation |> List.map toTileSpacePosition
@@ -225,4 +245,47 @@ stopSpin tileSpace =
 
             else
                 Nothing
+        )
+
+
+updateMove : TileSpace -> Maybe Block -> Maybe Block
+updateMove tileSpace =
+    Maybe.map
+        (\block ->
+            let
+                movedBlock =
+                    getNewBlockAfterMove False block
+
+                loweredBlock =
+                    getNewBlockAfterMove True block
+            in
+            if areValidPositions tileSpace movedBlock.positions then
+                movedBlock
+
+            else if areValidPositions tileSpace loweredBlock.positions then
+                loweredBlock
+
+            else
+                block
+        )
+
+
+startDrop : Maybe Block -> Maybe Block
+startDrop =
+    Maybe.map (\block -> { block | state = Dropping })
+
+
+updateDrop : TileSpace -> Maybe Block -> Maybe Block
+updateDrop tileSpace =
+    Maybe.map
+        (\block ->
+            let
+                droppedBlock =
+                    getNewBlockAfterDrop block
+            in
+            if areValidPositions tileSpace droppedBlock.positions then
+                droppedBlock
+
+            else
+                block
         )
