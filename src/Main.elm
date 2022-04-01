@@ -143,7 +143,8 @@ view model =
     div [ class "game" ]
         [ iconCss
         , title
-        , mouseDebug
+
+        -- , mouseDebug
         , Tiles.view model
         , Hud.viewFooter
         ]

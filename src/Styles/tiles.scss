@@ -1,10 +1,20 @@
 $tile-border: 0.5rem;
 $tile-size: 2rem;
 $tile-and-border-size: calc($tile-size + 2 * $tile-border);
+
+// Must correspond to config.gameWidth and config.gameHeight
+$num-rows: 15;
 $num-tiles-per-row: 11;
+
+$column-height: calc($tile-and-border-size * $num-rows);
 $row-width: calc($tile-and-border-size * $num-tiles-per-row);
 
 $preview-size-multiplier: 1.25;
+$preview-tile-size: calc($preview-size-multiplier * $tile-size);
+$preview-border-size: calc($preview-size-multiplier * $tile-border);
+$preview-tile-and-border-size: calc(
+  $preview-size-multiplier * $tile-and-border-size
+);
 
 %tile-base {
   border: $tile-border solid;
@@ -12,10 +22,10 @@ $preview-size-multiplier: 1.25;
   height: $tile-size;
 }
 %preview-tile-base {
-  border: calc($preview-size-multiplier * $tile-border) solid transparent;
+  border: $preview-border-size solid transparent;
   background-color: transparent;
-  width: calc($preview-size-multiplier * $tile-size);
-  height: calc($preview-size-multiplier * $tile-size);
+  width: $preview-tile-size;
+  height: $preview-tile-size;
 }
 
 .row {
@@ -24,8 +34,17 @@ $preview-size-multiplier: 1.25;
   height: $tile-and-border-size;
 
   &.preview {
-    height: calc($preview-size-multiplier * $tile-and-border-size);
+    height: $preview-tile-and-border-size;
   }
+}
+
+.preview-backdrop {
+  background-color: rgba(0, 0, 0, 0.4);
+  position: absolute;
+  margin-left: $tile-and-border-size;
+  height: calc($column-height - $tile-and-border-size);
+  width: calc($row-width - 2 * $tile-and-border-size);
+  z-index: 10;
 }
 
 .preview-space {
@@ -35,7 +54,7 @@ $preview-size-multiplier: 1.25;
   flex-direction: column;
   align-items: center;
   width: $row-width;
-  z-index: 42;
+  z-index: 20;
 }
 
 /* Free (non-wall) tile, and also the background tile behind all other tiles. */

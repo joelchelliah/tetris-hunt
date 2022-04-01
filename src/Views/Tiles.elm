@@ -137,7 +137,10 @@ preview { previewSpace, block } =
         previewRow row =
             div [ class "row preview" ] (List.map (previewTile block) row)
     in
-    div [ class "preview-space" ] (List.map previewRow previewSpace)
+    div []
+        [ div [ class "preview-backdrop" ] []
+        , div [ class "preview-space" ] (List.map previewRow previewSpace)
+        ]
 
 
 view : Model -> Html Msg

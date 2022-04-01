@@ -98,8 +98,8 @@ type Msg
 
 
 config =
-    { gameWidth = 11
-    , gameHeight = 15
+    { gameWidth = 11 -- Must correspond to $num-tiles-per-row in tiles.scss
+    , gameHeight = 15 -- Must correspond to $num-rows in tiles.scss
     , moveTickDelay = 350
     , spinTickDelay = 300
     }
