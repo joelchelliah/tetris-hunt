@@ -78,6 +78,25 @@ $preview-tile-and-border-size: calc(
     @include colored-tile(#999, -60%, 0%);
   }
 
+  &.decaying {
+    @include colored-tile(#fff, -80%, 0%);
+    @include keyframes(decay) {
+      0% {
+        opacity: 1;
+      }
+      45% {
+        opacity: 0.8;
+      }
+      55% {
+        opacity: 0.2;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+    @include animate(decay, 0.25s, linear, infinite);
+  }
+
   &.block {
     position: relative;
 

@@ -44,12 +44,18 @@ type alias MouseMoveData =
     }
 
 
+type alias BlockTile =
+    { position : Position
+    , color : Color
+    }
+
+
 type Tile
     = Wall
     | Free Position -- Open position without any tiles
-    | Locked Position Color -- Block tile, locked into position
-    | UnLocked Position Color -- Block tile, unlocked by tile below being removed
-    | Removing Position Color Float -- Float for decay animation
+    | Locked BlockTile -- Block tile, locked into position
+    | Falling BlockTile Int -- Block tile, falling after by tiles below being removed
+    | Decaying BlockTile Int -- Block tile, decaying until removed
 
 
 type Color
@@ -105,6 +111,6 @@ config =
     { gameWidth = 11 -- Must correspond to $num-tiles-per-row in tiles.scss
     , gameHeight = 15 -- Must correspond to $num-rows in tiles.scss
     , spinTickDelay = 350
-    , moveTickDelay = 100
+    , moveTickDelay = 200
     , dropTickDelay = 10
     }

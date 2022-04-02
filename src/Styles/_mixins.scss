@@ -16,6 +16,24 @@
   border-color: $highlight $shading $shading $highlight;
 }
 
+@mixin rotate($degrees) {
+  -webkit-transform: rotate($degrees);
+  -moz-transform: rotate($degrees);
+  -ms-transform: rotate($degrees);
+  -o-transform: rotate($degrees);
+  transform: rotate($degrees);
+}
+
+@mixin animate($animation, $duration, $method, $times) {
+  animation: $animation $duration $method $times;
+}
+
+@mixin keyframes($name) {
+  @keyframes #{$name} {
+    @content;
+  }
+}
+
 // - - - - - - - - - - - - - - - - -
 // - - - - - - - Modal - - - - - - -
 // - - - - - - - - - - - - - - - - -

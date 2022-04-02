@@ -63,6 +63,11 @@ placeWallTile =
     Tile "wall" |> makeTile div False
 
 
+placeDecayingTile : Html msg
+placeDecayingTile =
+    Tile "decaying" |> makeTile div False
+
+
 placeFreeTile : Html msg
 placeFreeTile =
     makeTile span False FreeTile
@@ -89,10 +94,10 @@ viewTile block tile =
         Wall ->
             placeWallTile
 
-        Locked _ color ->
+        Locked { color } ->
             placeBlockTile color
 
-        UnLocked _ color ->
+        Falling { color } _ ->
             placeBlockTile color
 
         Free pos ->
@@ -107,9 +112,9 @@ viewTile block tile =
                     else
                         placeFreeTile
 
-        Removing _ _ _ ->
+        Decaying _ _ ->
             -- TODO: Removing animation based on float param
-            placeWallTile
+            placeDecayingTile
 
 
 previewTile : Maybe Block -> Tile -> Html Msg

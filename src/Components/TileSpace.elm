@@ -6,9 +6,9 @@ import Model exposing (Block, Tile(..), TileSpace)
 updateTileFromBlock : Block -> Tile -> Tile
 updateTileFromBlock { color, positions } tile =
     case tile of
-        Free pos ->
-            if List.member pos positions then
-                Locked pos color
+        Free position ->
+            if List.member position positions then
+                Locked { position = position, color = color }
 
             else
                 tile
@@ -29,6 +29,38 @@ updateTilesFromBlock block tileSpace =
                     List.map (updateTileFromBlock newBlock)
             in
             List.map updateRow tileSpace
+
+
+markRemovableTiles : TileSpace -> TileSpace
+markRemovableTiles =
+    let
+        isLockedOrWall tile =
+            case tile of
+                Locked _ ->
+                    True
+
+                Wall ->
+                    True
+
+                _ ->
+                    False
+
+        updateTile tile =
+            case tile of
+                Locked blockTile ->
+                    Decaying blockTile 0
+
+                other ->
+                    other
+
+        updateRow row =
+            if List.all isLockedOrWall row then
+                List.map updateTile row
+
+            else
+                row
+    in
+    List.map updateRow
 
 
 init : Int -> Int -> TileSpace
@@ -53,6 +85,7 @@ update block tileSpace =
     let
         newTileSpace =
             updateTilesFromBlock block tileSpace
+                |> markRemovableTiles
     in
     -- TODO: Check if there is a valid row and set tiles to Decaying
     -- TODO: Update decaying tiles

@@ -7,11 +7,9 @@ import Components.TileSpace as TileSpace
 import Html exposing (Html, div, h1, text)
 import Html.Attributes exposing (class)
 import Model exposing (BlockShape(..), BlockState(..), GameState(..), Model, Msg(..), config)
-import Result exposing (fromMaybe)
 import Utils.Command exposing (getNewBlockCommand)
 import Utils.Icon exposing (iconCss)
 import Utils.Input exposing (keyboardDecoder, mouseClickDecoder, mouseMoveDecoder)
-import Utils.Position exposing (areValidPositions)
 import Views.Hud as Hud
 import Views.Tiles as Tiles
 
