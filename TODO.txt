@@ -1,9 +1,8 @@
-- Basic tetris stuff
-- Lose when tile cannot move down from start pos
 - Mouse position to block or in-game pos?
 - Mouse cursor
-- Can have several blocks flying / falling at the same time
 - Flashy clear blocks animation
 - Color adjustment
 - Clean up sass stuff
 - Some kind of flash for each rotate? so that the square doesnt seem too idle
+- Rotate by angle???
+- TileSpace updates follow their own ticks?

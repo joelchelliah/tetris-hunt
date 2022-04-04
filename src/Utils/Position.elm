@@ -6,7 +6,7 @@ import Model exposing (Position, Tile(..), TileSpace)
 getFreeTilePositions : TileSpace -> List Position
 getFreeTilePositions =
     let
-        getFreePositionsFromRow =
+        getFromRow =
             List.filterMap
                 (\tile ->
                     case tile of
@@ -17,7 +17,32 @@ getFreeTilePositions =
                             Nothing
                 )
     in
-    List.foldl (\row acc -> getFreePositionsFromRow row |> List.append acc) []
+    List.foldl (\row acc -> getFromRow row |> List.append acc) []
+
+
+getTopMostDecayedTilePosition : TileSpace -> Maybe Position
+getTopMostDecayedTilePosition tileSpace =
+    let
+        firstTileFromEachRow =
+            List.foldl (\row acc -> List.head row :: acc) [] tileSpace
+
+        getTopMostDecayedPos nextTile foundPos =
+            case ( nextTile, foundPos ) of
+                ( _, Just _ ) ->
+                    foundPos
+
+                ( Just (Decayed pos), _ ) ->
+                    Just pos
+
+                _ ->
+                    foundPos
+    in
+    List.foldl getTopMostDecayedPos Nothing firstTileFromEachRow
+
+
+isHigher : Position -> Position -> Bool
+isHigher ( _, y1 ) ( _, y2 ) =
+    y1 < y2
 
 
 areValidPositions : TileSpace -> List Position -> Bool

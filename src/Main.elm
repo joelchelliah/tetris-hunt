@@ -75,6 +75,7 @@ update msg ({ state, block, tileSpace, frameDeltas } as model) =
                         Block.updateMove tileSpace block
                 in
                 if block /= newBlock then
+                    -- Block moved
                     ( { model
                         | tileSpace = TileSpace.update Nothing tileSpace
                         , block = newBlock
@@ -83,6 +84,7 @@ update msg ({ state, block, tileSpace, frameDeltas } as model) =
                     )
 
                 else if Block.isValid tileSpace newBlock then
+                    -- Block didn't move
                     ( { model
                         | tileSpace = TileSpace.update newBlock tileSpace
                         , block = Nothing
@@ -211,7 +213,6 @@ subscriptions model =
                 , mouseClickSub
                 , keyDownSub
 
-                -- TODO: Currently disabled to focus on basic gameplay elements first.
                 -- , mouseMoveSub
                 ]
 

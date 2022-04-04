@@ -54,8 +54,9 @@ type Tile
     = Wall
     | Free Position -- Open position without any tiles
     | Locked BlockTile -- Block tile, locked into position
-    | Falling BlockTile Int -- Block tile, falling after by tiles below being removed
-    | Decaying BlockTile Int -- Block tile, decaying until removed
+    | Falling BlockTile -- Block tile, falling after tiles below are removed
+    | Decaying BlockTile Int -- Block tile, while decaying
+    | Decayed Position -- Decayed tile position
 
 
 type Color

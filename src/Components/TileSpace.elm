@@ -1,6 +1,12 @@
 module Components.TileSpace exposing (..)
 
-import Model exposing (Block, Tile(..), TileSpace)
+import Model exposing (Block, Color(..), Tile(..), TileSpace)
+import Utils.Position exposing (areValidPositions, getTopMostDecayedTilePosition, isHigher)
+
+
+numDecayTicks : number
+numDecayTicks =
+    5
 
 
 updateTileFromBlock : Block -> Tile -> Tile
@@ -17,8 +23,8 @@ updateTileFromBlock { color, positions } tile =
             tile
 
 
-updateTilesFromBlock : Maybe Block -> TileSpace -> TileSpace
-updateTilesFromBlock block tileSpace =
+addTilesFromBlock : Maybe Block -> TileSpace -> TileSpace
+addTilesFromBlock block tileSpace =
     case block of
         Nothing ->
             tileSpace
@@ -31,8 +37,59 @@ updateTilesFromBlock block tileSpace =
             List.map updateRow tileSpace
 
 
-markRemovableTiles : TileSpace -> TileSpace
-markRemovableTiles =
+initFallingTiles : TileSpace -> TileSpace
+initFallingTiles tileSpace =
+    let
+        topMostDecayedPos =
+            getTopMostDecayedTilePosition tileSpace
+
+        toFallingTile pos tile =
+            case tile of
+                Locked blockTile ->
+                    if isHigher blockTile.position pos then
+                        Falling blockTile
+
+                    else
+                        tile
+
+                _ ->
+                    tile
+    in
+    case topMostDecayedPos of
+        Nothing ->
+            tileSpace
+
+        Just pos ->
+            List.map (List.map (toFallingTile pos)) tileSpace
+
+
+updateFallingTiles : TileSpace -> TileSpace
+updateFallingTiles tileSpace =
+    let
+        updateTile tile =
+            case tile of
+                Falling blockTile ->
+                    Debug.todo "IMPLEMENT THIS!"
+
+                _ ->
+                    tile
+
+        updateRow row =
+            let
+                newRow =
+                    List.map updateTile row
+            in
+            if areValidPositions tileSpace newRow then
+                newRow
+
+            else
+                row
+    in
+    List.map updateRow (List.reverse tileSpace)
+
+
+initDecayingTiles : TileSpace -> TileSpace
+initDecayingTiles =
     let
         isLockedOrWall tile =
             case tile of
@@ -50,8 +107,8 @@ markRemovableTiles =
                 Locked blockTile ->
                     Decaying blockTile 0
 
-                other ->
-                    other
+                _ ->
+                    tile
 
         updateRow row =
             if List.all isLockedOrWall row then
@@ -63,12 +120,47 @@ markRemovableTiles =
     List.map updateRow
 
 
+updateDecayingTiles : TileSpace -> TileSpace
+updateDecayingTiles =
+    let
+        updateTile tile =
+            case tile of
+                Decaying blockTile i ->
+                    if i < numDecayTicks then
+                        Decaying blockTile (i + 1)
+
+                    else
+                        Decayed blockTile.position
+
+                _ ->
+                    tile
+    in
+    List.map (List.map updateTile)
+
+
+clearDecayedTiles : TileSpace -> TileSpace
+clearDecayedTiles =
+    let
+        updateTile tile =
+            case tile of
+                Decayed pos ->
+                    Free pos
+
+                _ ->
+                    tile
+    in
+    List.map (List.map updateTile)
+
+
 init : Int -> Int -> TileSpace
 init width height =
     let
         initTile ( x, y ) =
             if x == 1 || x == width || y == height then
                 Wall
+
+            else if y == (height - 1) then
+                Locked { position = ( x - 1, y - 1 ), color = Red }
 
             else
                 -- 0-indexing
@@ -82,11 +174,9 @@ init width height =
 
 update : Maybe Block -> TileSpace -> TileSpace
 update block tileSpace =
-    let
-        newTileSpace =
-            updateTilesFromBlock block tileSpace
-                |> markRemovableTiles
-    in
-    -- TODO: Check if there is a valid row and set tiles to Decaying
-    -- TODO: Update decaying tiles
-    newTileSpace
+    addTilesFromBlock block tileSpace
+        |> initFallingTiles
+        |> updateFallingTiles
+        |> initDecayingTiles
+        |> updateDecayingTiles
+        |> clearDecayedTiles

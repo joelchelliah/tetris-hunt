@@ -97,7 +97,7 @@ viewTile block tile =
         Locked { color } ->
             placeBlockTile color
 
-        Falling { color } _ ->
+        Falling { color } ->
             placeBlockTile color
 
         Free pos ->
@@ -112,8 +112,7 @@ viewTile block tile =
                     else
                         placeFreeTile
 
-        Decaying _ _ ->
-            -- TODO: Removing animation based on float param
+        _ ->
             placeDecayingTile
 
 
